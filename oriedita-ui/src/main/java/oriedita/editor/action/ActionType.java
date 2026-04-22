@@ -139,6 +139,7 @@ public enum ActionType {
     circleDrawConcentricAction("circleDrawConcentricAction"),
     circleDrawConcentricSelectAction("circleDrawConcentricSelectAction"),
     circleDrawTwoConcentricAction("circleDrawTwoConcentricAction"),
+    circleDrawFrom3Action("circleDrawFrom3Action"),
     circleDrawTangentLineAction("circleDrawTangentLineAction"),
     circleDrawThreePointAction("circleDrawThreePointAction"),
     circleDrawInvertedAction("circleDrawInvertedAction"),

@@ -78,7 +78,10 @@ public class ReferencesTab {
                 ActionType.circleDrawAction, ActionType.circleDrawSeparateAction
         );
         concentricCircleDropdown.setActions(
-                ActionType.circleDrawConcentricAction, ActionType.circleDrawTwoConcentricAction, ActionType.circleDrawConcentricSelectAction
+                ActionType.circleDrawConcentricAction,
+                ActionType.circleDrawTwoConcentricAction,
+                ActionType.circleDrawConcentricSelectAction,
+                ActionType.circleDrawFrom3Action
         );
         buttonService.addDefaultListener($$$getRootComponent$$$());
 

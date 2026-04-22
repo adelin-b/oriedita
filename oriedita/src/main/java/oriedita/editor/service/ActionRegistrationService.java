@@ -92,6 +92,7 @@ public class ActionRegistrationService {
                 put(ActionType.circleDrawConcentricAction, MouseMode.CIRCLE_DRAW_CONCENTRIC_48);
                 put(ActionType.circleDrawConcentricSelectAction, MouseMode.CIRCLE_DRAW_CONCENTRIC_SELECT_49);
                 put(ActionType.circleDrawTwoConcentricAction, MouseMode.CIRCLE_DRAW_CONCENTRIC_TWO_CIRCLE_SELECT_50);
+                put(ActionType.circleDrawFrom3Action, MouseMode.CIRCLE_DRAW_FROM_3_CIRCLES_108);
                 put(ActionType.foldedFigureMoveAction, MouseMode.MOVE_CALCULATED_SHAPE_102);
                 put(ActionType.o_F_checkAction, MouseMode.FLAT_FOLDABLE_CHECK_63);
                 put(ActionType.del_lAction, MouseMode.CREASE_DELETE_OVERLAPPING_64);
