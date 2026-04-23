@@ -78,10 +78,7 @@ public class ReferencesTab {
                 ActionType.circleDrawAction, ActionType.circleDrawSeparateAction
         );
         concentricCircleDropdown.setActions(
-                ActionType.circleDrawConcentricAction,
-                ActionType.circleDrawTwoConcentricAction,
-                ActionType.circleDrawConcentricSelectAction,
-                ActionType.circleDrawFrom3Action
+                ActionType.circleDrawConcentricAction, ActionType.circleDrawTwoConcentricAction, ActionType.circleDrawConcentricSelectAction
         );
         buttonService.addDefaultListener($$$getRootComponent$$$());
 
@@ -183,7 +180,7 @@ public class ReferencesTab {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel3.add(concentricCircleDropdown, gbc);
         a3pointCircleButton = new JButton();
-        a3pointCircleButton.setActionCommand("circleDrawThreePointAction");
+        a3pointCircleButton.setActionCommand("circleDrawApolloniusAction");
         a3pointCircleButton.setText("3pointCircle");
         gbc = new GridBagConstraints();
         gbc.gridx = 0;

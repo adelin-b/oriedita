@@ -7,7 +7,7 @@ importAction;gridLineWidthDecreaseAction;rotateClockwiseAction;gridSizeSetAction
 exportAction;h_senhaba_ageAction;rotateAnticlockwiseAction;setIntervalGridSizeAction;drawCreaseRestrictedAction;unselect_polygonAction;del_lAction;lineSegmentInternalDivisionRatioSetAction;circleDrawConcentricSelectAction;;As100Action;foldedFigureSizeDecreaseAction;fxTAction;showPointRangeAction;deg4Action
 inputDataAction;h_senhaba_sageAction;rotationSetAction;moveIntervalGridVerticalAction;deg2Action;selectLassoAction;del_l_XAction;polygonSizeSetAction;circleDrawTwoConcentricAction;;koteimen_siteiAction;foldedFigureSizeSetAction;ck4_colorDecreaseAction;pointOffsetAction;lineSegmentDeleteAction
 convertAction;pointSizeIncreaseAction;operationFrameSelectAction;moveIntervalGridHorizontalAction;deg1Action;unselectLassoAction;senbun_henkan2Action;;circleDrawTangentLineAction;;suitei_01Action;foldedFigureRotateClockwiseAction;ck4_colorIncreaseAction;gridInputAssistAction;edgeLineSegmentDeleteAction
-resetAction;pointSizeDecreaseAction;drawTwoColoredCpAction;setGridParametersAction;deg3Action;select_lXAction;in_L_col_changeAction;;circleDrawThreePointAction;;suitei_02Action;foldedFigureRotateAntiClockwiseAction;;displayCommentsAction;auxLiveLineSegmentDeleteAction
+resetAction;pointSizeDecreaseAction;drawTwoColoredCpAction;setGridParametersAction;deg3Action;select_lXAction;in_L_col_changeAction;;circleDrawApolloniusAction;;suitei_02Action;foldedFigureRotateAntiClockwiseAction;;displayCommentsAction;auxLiveLineSegmentDeleteAction
 exitAction;lineStyleChangeAction;backgroundToggleAction;gridConfigureResetAction;lengthenCreaseAction;unselect_lXAction;on_L_col_changeAction;;circleDrawInvertedAction;;suitei_03Action;foldedFigureRotateSetAction;;displayCpLinesAction;toMountainAction
 ;gridColorAction;backgroundSetPositionAction;;rabbitEarAction;moveAction;senbun_henkanAction;;sen_tokutyuu_color_henkouAction;;coloredXRayAction;oriagari_sousaAction;;displayAuxLinesAction;toValleyAction
 ;intervalGridColorAction;backgroundLockAction;;makeFlatFoldableAction;move2p2pAction;zen_yama_tani_henkanAction;;c_colAction;;coloredXRayDecreaseAction;oriagari_sousa_2Action;;displayLiveAuxLinesAction;toEdgeAction
@@ -20,7 +20,7 @@ exitAction;lineStyleChangeAction;backgroundToggleAction;gridConfigureResetAction
 ;;;;continuousSymmetricDrawAction;;;;h_undoTotalSetAction;;;foldedFigureToggleAntiAliasAction;;;senbun_yoke_henkanAction
 ;;;;axiom5Action;;;;;;;foldedFigureToggleShadowAction;;;selectAnd3ClickAction
 ;;;;axiom7Action;;;;;;;addColorConstraintAction;;;correctCpBeforeFoldingAction
-;;;;voronoiAction;;;;;;;;;;
+;;;;voronoiAction;;;;;;;;;;circleDrawThreePointAction
 ;;;;all_s_step_to_orisenAction;;;;;;;;;;
 ;;;;regularPolygonAction;;;;;;;;;;
 ;;;;senbun_b_nyuryokuAction;;;;;;;;;;

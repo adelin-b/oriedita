@@ -80,7 +80,7 @@
                       <gridbag weightx="1.0" weighty="0.0"/>
                     </constraints>
                     <properties>
-                      <actionCommand value="circleDrawThreePointAction"/>
+                      <actionCommand value="circleDrawApolloniusAction"/>
                       <text value="3pointCircle"/>
                     </properties>
                   </component>
