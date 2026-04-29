@@ -56,13 +56,12 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
     public void drawPreview(Graphics2D g2, Camera camera, DrawingSettings settings) {
         super.drawPreview(g2, camera, settings);
 
-        DrawingUtil.drawCircleStep(g2, k1, camera);
-        DrawingUtil.drawCircleStep(g2, k2, camera);
-        DrawingUtil.drawCircleStep(g2, k3, camera);
-
         for (Circle indicator : indicators)
             DrawingUtil.drawCircleStep(g2, indicator, camera);
 
+        DrawingUtil.drawCircleStep(g2, k1, camera);
+        DrawingUtil.drawCircleStep(g2, k2, camera);
+        DrawingUtil.drawCircleStep(g2, k3, camera);
         DrawingUtil.drawCircleStep(g2, result, camera);
 
         DrawingUtil.drawLineStep(g2, l1, camera, settings.getLineWidth());
@@ -230,26 +229,129 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
     private void process_apollonius() {
         int numC = ((k1 !=null) ? 1:0) + ((k2 !=null) ? 1:0) + ((k3 !=null) ? 1:0);
 
-        // Reshuffle to make sure they are populated from 1 to 3. The selection process can e.g. leave l1 empty but have l2 populated
-        if(l1 ==null && l3 !=null)    l1 = l3;
-        if(l1 ==null && l2 !=null)    l1 = l2;
-        if(l2 ==null && l3 !=null)    l2 = l3;
+        // Reshuffle to make sure they are populated from 1 to 3.
+        // The selection process can e.g. leave l1 empty but have l2 populated
+        if(l1==null && l3!=null) l1 = l3;
+        if(l1==null && l2!=null) l1 = l2;
+        if(l2==null && l3!=null) l2 = l3;
 
-        if(k1==null && k3!=null)    k1 = k3;
-        if(k1==null && k2!=null)    k1 = k2;
-        if(k2==null && k3!=null)    k2 = k3;
+        if(k1==null && k3!=null) k1 = k3;
+        if(k1==null && k2!=null) k1 = k2;
+        if(k2==null && k3!=null) k2 = k3;
 
         // Points are represented by circles with radius 0, so 6/10 variants are redundant
-        if(numC==0)  process_apollonius_LLL();
-        if(numC==1)  process_apollonius_CLL();
-        if(numC==2)  process_apollonius_CCL();
         if(numC==3)  process_apollonius_CCC();
+        if(numC==2)  process_apollonius_CCL();
+        if(numC==1)  process_apollonius_CLL();
+        if(numC==0)  process_apollonius_LLL();
+    }
+
+    private void process_apollonius_CCC() {
+        final double EPS = 1e-6;
+        final double MIN_R = 1e-3;
+        final double MAX_R = 1e6;
+
+        int[] signs = {-1, 1};
+
+        for (int s1 : signs) {
+            for (int s2 : signs) {
+                for (int s3 : signs) {
+
+                    double[][] lin = new double[2][4];
+                    lin[0] = calc_coefficients_from_2_circles(k1, s1, k2, s2);
+                    lin[1] = calc_coefficients_from_2_circles(k2, s2, k3, s3);
+
+                    Circle[] sols = solve_one_or_more_circles(lin, s1);
+
+                    for (Circle c : sols) {
+                        if (c == null)
+                            continue;
+
+                        if (c.getR() < MIN_R || c.getR() > MAX_R)
+                            continue;
+
+                        if (is_valid_circle(c, indicators, EPS*10)) {
+                            indicators.add(c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void process_apollonius_CCL() {
+        final double EPS = 1e-6;
+        final double MIN_R = 1e-3;
+        final double MAX_R = 1e6;
+
+        int[] signs = {-1, 1};
+
+        for (int s1 : signs) {
+            for (int s2 : signs) {
+                for (int s3 : signs) {
+
+                    double[][] lin = new double[2][4];
+                    lin[0] = calc_coefficients_from_2_circles(k1, s1, k2, s2);
+                    lin[1] = calc_coefficients_from_line(l1, s3);
+
+                    Circle[] sols = solve_one_or_more_circles(lin, s1);
+
+                    for (Circle c : sols) {
+                        if (c == null)
+                            continue;
+
+                        if (c.getR() < MIN_R || c.getR() > MAX_R)
+                            continue;
+
+                        if (is_valid_circle(c, indicators, EPS*10)) {
+                            indicators.add(c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void process_apollonius_CLL() {
+        final double EPS = 1e-6;
+        final double MIN_R = 1e-3;
+        final double MAX_R = 1e6;
+
+        int[] signs = {-1, 1};
+
+        for (int s1 : signs) {
+            for (int s2 : signs) {
+                for (int s3 : signs) {
+                    double[][] lin = new double[2][4];
+                    lin[0] = calc_coefficients_from_line(l1, s2);
+                    lin[1] = calc_coefficients_from_line(l2, s3);
+
+                    Circle[] sols = solve_one_or_more_circles(lin, s1);
+
+                    for (Circle c : sols) {
+                        if (c == null)
+                            continue;
+
+                        if (c.getR() < MIN_R || c.getR() > MAX_R)
+                            continue;
+
+                        if (is_valid_circle(c, indicators, EPS*10)) {
+                            indicators.add(c);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void process_apollonius_LLL() {
         final double EPS = 1e-6;
         final double MIN_R = 1e-3;
         final double MAX_R = 1e6;
+
+        // Catch 3 parallel lines early
+        if(1-Math.abs(dot(l1, l2)) < EPS && 1-Math.abs(dot(l2, l3)) < EPS)
+            return;
 
         int[] signs = {-1, 1};
 
@@ -264,15 +366,15 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
                     if (c.getR() < MIN_R || c.getR() > MAX_R)
                         continue;
 
-                    if (!is_valid_circle(c, indicators, EPS)) {
+                    if (is_valid_circle(c, indicators, EPS)) {
                         indicators.add(c);
                     }
                 }
             }
         }
     }
-    private Circle solve_LLL(int s1, int s2, int s3) {
 
+    private Circle solve_LLL(int s1, int s2, int s3) {
         double[][] lin = new double[3][4];
 
         lin[0] = calc_coefficients_from_line(l1, s1);
@@ -318,47 +420,11 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
         double y = detY / det0;
         double r = detR / det0;
 
-        if (r <= 0)
-            return null;
 
-        return new Circle(x, y, r, LineColor.PURPLE_8);
+        return new Circle(x, y, Math.abs(r), LineColor.PURPLE_8);
     }
 
-    private void process_apollonius_CLL() {
-        final double EPS = 1e-6;
-        final double MIN_R = 1e-3;
-        final double MAX_R = 1e6;
-
-        int[] signs = {-1, 1};
-
-        for (int s1 : signs) {
-            for (int s2 : signs) {
-                for (int s3 : signs) {
-
-                    Circle[] sols = solve_CLL(s1, s2, s3);
-
-                    for (Circle c : sols) {
-                        if (c == null)
-                            continue;
-
-                        if (c.getR() < MIN_R || c.getR() > MAX_R)
-                            continue;
-
-                        if (!is_valid_circle(c, indicators, EPS)) {
-                            indicators.add(c);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    private Circle[] solve_CLL(int s1, int s2, int s3) {
-
-        double[][] lin = new double[2][4];
-
-        lin[0] = calc_coefficients_from_line(l1, s2);
-        lin[1] = calc_coefficients_from_line(l2, s3);
-
+    private Circle[] solve_one_or_more_circles(double[][] lin, int s1) {
         double[][] cd = solve_2_linear_equations_with_3_unknown(lin);
 
         double c1 = cd[0][0], d1 = cd[0][1];
@@ -370,13 +436,7 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
         double kR = k1.getR();
 
         double denom = 1 - c1*c1 - c2*c2;
-        if (Math.abs(denom) < 1e-9)
-            return new Circle[]{null, null};
-
         double discr = calc_discriminant(c1, c2, s1, kR, e1, e2);
-
-        if (discr < 0)
-            return new Circle[]{null, null};
 
         double root = Math.sqrt(discr);
         double h = kR * s1 + c1*e1 + c2*e2;
@@ -386,182 +446,14 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
 
         Circle[] result = new Circle[2];
 
-        if (r1 > 0) {
-            double x = c1*r1 + d1;
-            double y = c2*r1 + d2;
-            result[0] = new Circle(x, y, r1, LineColor.PURPLE_8);
-        }
+        double x = c1 * r1 + d1;
+        double y = c2 * r1 + d2;
+        result[0] = new Circle(x, y, Math.abs(r1), LineColor.PURPLE_8);
 
-        if (r2 > 0 && discr > 1e-12) {
-            double x = c1*r2 + d1;
-            double y = c2*r2 + d2;
-            result[1] = new Circle(x, y, r2, LineColor.PURPLE_8);
-        }
+        x = c1 * r2 + d1;
+        y = c2 * r2 + d2;
+        result[1] = new Circle(x, y, Math.abs(r2), LineColor.PURPLE_8);
 
-        return result;
-    }
-
-    private double calc_discriminant(double c1, double c2, double s1, double kR, double e1, double e2) {
-        return (c1*c1 + c2*c2) * kR * kR +
-                2 * (c1*e1 + c2*e2) * kR * s1 +
-                (1 - c1*c1) * e2 * e2 +
-                (1 - c2*c2) * e1 * e1 +
-                2 * c1 * c2 * e1 * e2;
-    }
-
-    private void process_apollonius_CCL() {
-        final double EPS = 1e-6;
-        final double MIN_R = 1e-3;
-        final double MAX_R = 1e6;
-
-        int[] signs = {-1, 1};
-
-        for (int s1 : signs) {
-            for (int s2 : signs) {
-                for (int s3 : signs) {
-
-                    Circle[] sols = solve_CCL(s1, s2, s3);
-
-                    for (Circle c : sols) {
-                        if (c == null)
-                            continue;
-
-                        if (c.getR() < MIN_R || c.getR() > MAX_R)
-                            continue;
-
-                        if (!is_valid_circle(c, indicators, EPS)) {
-                            indicators.add(c);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private Circle[] solve_CCL(int s1, int s2, int s3) {
-
-        double[][] lin = new double[2][4];
-
-        lin[0] = calc_coefficients_from_2_circles(k1, s1, k2, s2);
-        lin[1] = calc_coefficients_from_line(l1, s3);
-
-        double[][] cd = solve_2_linear_equations_with_3_unknown(lin);
-
-        double c1 = cd[0][0], d1 = cd[0][1];
-        double c2 = cd[1][0], d2 = cd[1][1];
-
-        double e1 = d1 - k1.getX();
-        double e2 = d2 - k1.getY();
-
-        double denom = 1 - c1*c1 - c2*c2;
-        if (Math.abs(denom) < 1e-9)
-            return new Circle[]{null, null};
-
-        double discr = calc_discriminant(c1, c2, s1, k1.getR(), e1, e2);
-
-        if (discr < 0)
-            return new Circle[]{null, null};
-
-        double root = Math.sqrt(discr);
-        double h = k1.getR() * s1 + c1*e1 + c2*e2;
-
-        double r1 = (h + root) / denom;
-        double r2 = (h - root) / denom;
-
-        Circle[] result = new Circle[2];
-
-        if (r1 > 0) {
-            double x = c1 * r1 + d1;
-            double y = c2 * r1 + d2;
-            result[0] = new Circle(x, y, r1, LineColor.PURPLE_8);
-        }
-
-        if (r2 > 0 && discr > 1e-12) {
-            double x = c1 * r2 + d1;
-            double y = c2 * r2 + d2;
-            result[1] = new Circle(x, y, r2,  LineColor.PURPLE_8);
-        }
-
-        return result;
-    }
-
-    private void process_apollonius_CCC() {
-        final double EPS = 1e-6;
-        final double MIN_R = 1e-3;
-        final double MAX_R = 1e6;
-
-        int[] signs = {-1, 1};
-
-        for (int s1 : signs) {
-            for (int s2 : signs) {
-                for (int s3 : signs) {
-
-                    Circle[] sols = solve_CCC(s1, s2, s3);
-
-                    for (Circle c : sols) {
-                        if (c == null)
-                            continue;
-
-                        if (c.getR() < MIN_R || c.getR() > MAX_R)
-                            continue;
-
-                        if (!is_valid_circle(c, indicators, EPS)) {
-                            indicators.add(c);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private Circle[] solve_CCC(int s1, int s2, int s3) {
-        double x1 = k1.getX(), y1 = k1.getY(), r1 = k1.getR();
-        double x2 = k2.getX(), y2 = k2.getY(), r2 = k2.getR();
-        double x3 = k3.getX(), y3 = k3.getY(), r3 = k3.getR();
-
-        // Signed radii
-        double sr1 = s1 * r1;
-        double sr2 = s2 * r2;
-        double sr3 = s3 * r3;
-
-        double Ka = -Math.pow(sr1,2) + Math.pow(sr2,2) + Math.pow(x1,2) - Math.pow(x2,2) + Math.pow(y1,2) - Math.pow(y2,2);
-        double Kb = -Math.pow(sr1,2) + Math.pow(sr3,2) + Math.pow(x1,2) - Math.pow(x3,2) + Math.pow(y1,2) - Math.pow(y3,2);
-
-        double D = x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2);
-
-        // avoid degenerate case
-        if (Math.abs(D) < 1e-9)
-            return new Circle[]{null, null};
-
-        double A0 =  (Ka * (y1 - y3) + Kb * (y2 - y1)) / (2 * D);
-        double B0 = -(Ka * (x1 - x3) + Kb * (x2 - x1)) / (2 * D);
-
-        double A1 = -(sr1 * (y2 - y3) + sr2 * (y3 - y1) + sr3 * (y1 - y2)) / D;
-        double B1 =  (sr1 * (x2 - x3) + sr2 * (x3 - x1) + sr3 * (x1 - x2)) / D;
-
-        double C0 = - 2*A0*x1 - 2*B0*y1 + Math.pow(A0,2) + Math.pow(B0,2) - Math.pow(sr1,2) + Math.pow(x1,2) + Math.pow(y1,2);
-        double C1 = A0*A1 - A1*x1 + B0*B1 - B1*y1 - sr1;
-        double C2 = Math.pow(A1,2) + Math.pow(B1,2) - 1;
-
-        double discriminant = C1*C1 - C0*C2;
-
-        if (discriminant < 0)
-            return new Circle[]{null, null};
-
-        double[] solutions = { -(C1+Math.sqrt(discriminant)) / C2, (-C1 + Math.sqrt(discriminant)) / C2 };
-
-        Circle[] result = new Circle[2];
-
-        int i = 0;
-        for (double r : solutions) {
-            if (Double.isNaN(r) || Double.isInfinite(r))
-                continue;
-
-            double x = A0 + A1 * r;
-            double y = B0 + B1 * r;
-            result[i] = new Circle(x, y, Math.abs(r), LineColor.PURPLE_8);
-            i++;
-        }
         return result;
     }
 
@@ -581,6 +473,7 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
 
         return new double[]{r0, r1, r2, r3};
     }
+
     private double[] calc_coefficients_from_2_circles(Circle k1, int s1, Circle k2, int s2) {
         double x1 = k1.getX(), y1 = k1.getY(), r1 = k1.getR();
         double x2 = k2.getX(), y2 = k2.getY(), r2 = k2.getR();
@@ -591,6 +484,14 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
         double co4 = 2 * (s1*r1 - s2*r2);
 
         return new double[]{co1, co2, co3, co4};
+    }
+
+    private double calc_discriminant(double c1, double c2, double s1, double kR, double e1, double e2) {
+        return (c1*c1 + c2*c2) * kR * kR +
+                2 * (c1*e1 + c2*e2) * kR * s1 +
+                (1 - c1*c1) * e2 * e2 +
+                (1 - c2*c2) * e1 * e1 +
+                2 * c1 * c2 * e1 * e2;
     }
 
     // Solve system of linear equations with 2 functions and 3 unknowns
@@ -609,14 +510,37 @@ public class MouseHandlerCircleDrawApollonius extends StepMouseHandler<CircleDra
 
         return new double[][]{{det1/det0, det2/det0}, {det3/det0, det4/det0}};
     }
+
+    private double dot(LineSegment l1, LineSegment l2) {
+        double l1_dx = l1.determineDeltaX()/l1.determineLength();
+        double l1_dy = l1.determineDeltaY()/l1.determineLength();
+        double l2_dx = l2.determineDeltaX()/l2.determineLength();
+        double l2_dy = l2.determineDeltaY()/l2.determineLength();
+
+        return  l1_dx*l2_dx + l1_dy*l2_dy;
+    }
+
+    // true for valid circle
     private boolean is_valid_circle(Circle c, List<Circle> list, double eps) {
         for (Circle other : list) {
-            double dr = c.getR() - other.getR();
-
-            if (c.determineCenter().distance(other.determineCenter()) < eps && Math.abs(dr) < eps) {
-                return true;
-            }
+            if(!is_valid_circle_helper(c, other, eps))
+                return false;
         }
-        return false;
+        if(k1!= null)
+            if(!is_valid_circle_helper(c, k1, eps))
+                return false;
+        if(k2!= null)
+            if(!is_valid_circle_helper(c, k2, eps))
+                return false;
+        if(k3!= null)
+            return is_valid_circle_helper(c, k3, eps);
+
+        return true;
+    }
+
+    // true for valid circle
+    private boolean is_valid_circle_helper(Circle c, Circle other, double eps) {
+        double dr = c.getR() - other.getR();
+        return !((c.determineCenter().distance(other.determineCenter()) < eps) && (Math.abs(dr) < eps));
     }
 }
