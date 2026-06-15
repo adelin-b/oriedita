@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
+import org.jboss.weld.environment.se.events.ContainerShutdown;
 import org.tinylog.Logger;
 import oriedita.editor.Canvas;
 import oriedita.editor.action.ActionService;
@@ -103,6 +104,14 @@ public class ControlServer {
             Logger.info("Oriedita control server listening on http://127.0.0.1:{}", port);
         } catch (IOException e) {
             Logger.error(e, "Failed to start Oriedita control server");
+        }
+    }
+
+    public void onStop(@Observes ContainerShutdown event) {
+        if (server != null) {
+            server.stop(0);
+            server = null;
+            Logger.info("Oriedita control server stopped");
         }
     }
 

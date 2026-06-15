@@ -35,6 +35,8 @@ import java.awt.Dimension;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Embeds Amanda Ghassaei's <a href="https://origamisimulator.org/">Origami Simulator</a> (a
@@ -95,6 +97,13 @@ public class FoldedPreviewService {
 
     /** Debounce timer (EDT) coalescing rapid edits into a single push. */
     private Timer pushDebounce;
+
+    /** Serializes the heavy FOLD export off the EDT (snapshot taken on the EDT). */
+    private final ExecutorService exportExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "oriedita-fold-export");
+        t.setDaemon(true);
+        return t;
+    });
 
     @Inject
     public FoldedPreviewService(
@@ -242,18 +251,28 @@ public class FoldedPreviewService {
         if (!simReady || browser == null) {
             return;
         }
+        // Snapshot the pattern on the EDT (detached Save), then do the heavy FOLD
+        // serialization off the EDT so large patterns do not freeze the UI.
+        final Save save;
         try {
-            Save save = creasePatternWorker.getSave_for_export();
-            String foldJson = foldExporter.toFoldString(save);
-            String b64 = Base64.getEncoder().encodeToString(foldJson.getBytes(StandardCharsets.UTF_8));
-            browser.executeJavaScript(
-                    "window.orieditaSetFold && window.orieditaSetFold('" + b64 + "');",
-                    SCRIPT_ORIGIN, 0);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            save = creasePatternWorker.getSave_for_export();
         } catch (Exception e) {
-            Logger.warn(e, "Could not push crease pattern to folded preview");
+            Logger.warn(e, "Could not snapshot crease pattern for folded preview");
+            return;
         }
+        exportExecutor.submit(() -> {
+            try {
+                String foldJson = foldExporter.toFoldString(save);
+                String b64 = Base64.getEncoder().encodeToString(foldJson.getBytes(StandardCharsets.UTF_8));
+                browser.executeJavaScript(
+                        "window.orieditaSetFold && window.orieditaSetFold('" + b64 + "');",
+                        SCRIPT_ORIGIN, 0);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                Logger.warn(e, "Could not push crease pattern to folded preview");
+            }
+        });
     }
 
     private void pushPercent(int percent) {

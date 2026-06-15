@@ -50,8 +50,10 @@ final class SimulatorAssets {
             throw new FileNotFoundException("Bundled simulator not found on classpath: " + ROOT + "/index.html");
         }
 
-        Path target = Files.createTempDirectory("oriedita-folded-preview");
-        target.toFile().deleteOnExit();
+        // Reuse one stable temp dir, re-extracted each run, instead of leaking a fresh
+        // multi-MB temp directory per launch (deleteOnExit cannot remove a non-empty dir).
+        Path target = Paths.get(System.getProperty("java.io.tmpdir"), "oriedita-folded-preview");
+        Files.createDirectories(target);
 
         if ("jar".equals(entry.getProtocol())) {
             copyFromJar(entry, target);
