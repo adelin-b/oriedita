@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# oriedita-ctl — thin CLI over the Oriedita control server.
+#
+# Drives the *currently open* Oriedita instance. Requires that instance to have been
+# launched with the control server enabled, e.g.:
+#
+#     java -Doriedita.control.port=7401 -jar oriedita.jar
+#
+# Override the port with ORIEDITA_CONTROL_PORT.
+#
+# Usage:
+#   oriedita-ctl health                 # is the control server up?
+#   oriedita-ctl actions                # list every action the running build supports
+#   oriedita-ctl do <actionName>        # fire an action (e.g. newAction, toMountainAction, saveAction)
+#   oriedita-ctl open <file>            # open a .cp/.fold/... into the live editor
+#   oriedita-ctl save <file>            # export current crease pattern (.cp or .fold by extension)
+#   oriedita-ctl cp                     # print current crease pattern as .fold JSON
+set -euo pipefail
+
+PORT="${ORIEDITA_CONTROL_PORT:-7401}"
+BASE="http://127.0.0.1:${PORT}"
+
+die() { echo "oriedita-ctl: $*" >&2; exit 1; }
+need() { command -v curl >/dev/null 2>&1 || die "curl not found"; }
+
+abspath() {
+  case "$1" in
+    /*) printf '%s' "$1" ;;
+    *)  printf '%s/%s' "$(pwd)" "$1" ;;
+  esac
+}
+
+need
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+  health)
+    curl -fsS "${BASE}/health" ;;
+  actions)
+    curl -fsS "${BASE}/actions" ;;
+  do)
+    [ $# -ge 1 ] || die "usage: oriedita-ctl do <actionName>"
+    curl -fsS -X POST "${BASE}/action" --get --data-urlencode "name=$1" ;;
+  open)
+    [ $# -ge 1 ] || die "usage: oriedita-ctl open <file>"
+    curl -fsS -X POST "${BASE}/open" --get --data-urlencode "path=$(abspath "$1")" ;;
+  save)
+    [ $# -ge 1 ] || die "usage: oriedita-ctl save <file>"
+    curl -fsS -X POST "${BASE}/save" --get --data-urlencode "path=$(abspath "$1")" ;;
+  cp)
+    curl -fsS "${BASE}/cp" ;;
+  line)
+    [ $# -ge 4 ] || die "usage: oriedita-ctl line <x1> <y1> <x2> <y2> [color]"
+    curl -fsS -X POST "${BASE}/line" --get \
+      --data-urlencode "x1=$1" --data-urlencode "y1=$2" \
+      --data-urlencode "x2=$3" --data-urlencode "y2=$4" \
+      --data-urlencode "color=${5:-mountain}" ;;
+  circle)
+    [ $# -ge 3 ] || die "usage: oriedita-ctl circle <x> <y> <r> [color]"
+    curl -fsS -X POST "${BASE}/circle" --get \
+      --data-urlencode "x=$1" --data-urlencode "y=$2" --data-urlencode "r=$3" \
+      --data-urlencode "color=${4:-mountain}" ;;
+  lines)
+    # batch: read "x1,y1,x2,y2[,color]" lines from a file arg or stdin
+    if [ $# -ge 1 ]; then src="$1"; else src="-"; fi
+    curl -fsS -X POST "${BASE}/lines" --data-binary "@${src}" ;;
+  ""|-h|--help|help)
+    sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *)
+    die "unknown command '$cmd' (try: health, actions, do, open, save, cp, line, lines, circle)" ;;
+esac
