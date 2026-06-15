@@ -167,6 +167,10 @@
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <mainClass>oriedita.editor.Oriedita</mainClass>
+                            <manifestEntries>
+                                <!-- Java CEF (folded preview) needs reflective access to AWT internals on Java 17+ -->
+                                <Add-Opens>java.desktop/sun.awt java.base/java.lang</Add-Opens>
+                            </manifestEntries>
                         </transformer>
                     </transformers>
                     <artifactSet>

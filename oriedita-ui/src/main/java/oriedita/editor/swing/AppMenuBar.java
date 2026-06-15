@@ -33,6 +33,7 @@ import oriedita.editor.service.LookAndFeelService;
 import oriedita.editor.service.ResetService;
 import oriedita.editor.service.TaskExecutorService;
 import oriedita.editor.swing.dialog.PreferenceDialog;
+import oriedita.editor.swing.foldedpreview.FoldedPreviewService;
 import oriedita.editor.tools.LookAndFeelUtil;
 import oriedita.editor.tools.ResourceUtil;
 import origami.crease_pattern.element.Point;
@@ -111,12 +112,14 @@ public class AppMenuBar {
     private JMenuItem invertMVButton;
     private JMenuItem undoButton;
     private JMenuItem redoButton;
+    private JMenuItem foldedPreviewMenuItem;
     private AppMenuBarUI appMenuBarUI;
     private PreferenceDialog preferenceDialog;
     private final AnimationService animationService;
     private final CameraModel creasePatternCameraModel;
     private final Camera camera;
     private final ActionService actionService;
+    private final FoldedPreviewService foldedPreviewService;
 
     @Inject
     public AppMenuBar(
@@ -135,7 +138,8 @@ public class AppMenuBar {
             AnimationService animationService,
             Camera camera,
             CameraModel creasePatternCameraModel,
-            ActionService actionService
+            ActionService actionService,
+            FoldedPreviewService foldedPreviewService
     ) {
         this.frameProvider = frameProvider;
         this.foldingExecutor = foldingExecutor;
@@ -153,6 +157,7 @@ public class AppMenuBar {
         this.camera = camera;
         this.creasePatternCameraModel = creasePatternCameraModel;
         this.actionService = actionService;
+        this.foldedPreviewService = foldedPreviewService;
     }
 
     public void resetCPView(){
@@ -222,6 +227,8 @@ public class AppMenuBar {
         buttonService.registerButton(showSelfIntersectionCheckBox, "displaySelfIntersectionAction");
         buttonService.registerButton(useAdvancedCheck4Display, "useAdvancedCheck4DisplayAction");
         buttonService.registerButton(doAnimations, "doAnimations");
+
+        foldedPreviewMenuItem.addActionListener(e -> foldedPreviewService.show());
 
         buttonService.registerButton(copyButton, "copyClipboardAction");
         buttonService.registerButton(cutButton, "cutClipboardAction");
@@ -568,6 +575,9 @@ public class AppMenuBar {
         viewMenu.add(doAnimations);
         scaleCP = new JMenuItem("Scale back CP");
         viewMenu.add(scaleCP);
+
+        foldedPreviewMenuItem = new JMenuItem("Folded Preview (3D)…");
+        viewMenu.add(foldedPreviewMenuItem);
 
         JMenu helpMenu = new JMenu("Help");
         helpMenu.setMnemonic('H');

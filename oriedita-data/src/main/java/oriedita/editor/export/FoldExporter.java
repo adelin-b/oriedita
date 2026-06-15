@@ -1,6 +1,7 @@
 package oriedita.editor.export;
 
 import fold.io.CustomFoldWriter;
+import fold.io.FoldFileFormatException;
 import fold.model.Edge;
 import fold.model.Face;
 import fold.model.FoldEdgeAssignment;
@@ -20,9 +21,11 @@ import origami.crease_pattern.element.Point;
 import origami.crease_pattern.worker.WireFrame_Worker;
 
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +58,19 @@ public class FoldExporter implements FileExporter {
         LineSegmentSet s = new LineSegmentSet();
         s.setSave(save);
         return toFoldSave(save, s);
+    }
+
+    /**
+     * Serialize a crease pattern to a FOLD-format JSON string (the in-memory equivalent of
+     * {@link #doExport(Save, File)}). Used to feed the embedded folding preview.
+     *
+     * @param save the crease pattern to serialize
+     * @return the FOLD document as a UTF-8 JSON string
+     */
+    public String toFoldString(Save save) throws InterruptedException, FoldFileFormatException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        new CustomFoldWriter<OrieditaFoldFile>(out).write(toFoldSave(save));
+        return out.toString(StandardCharsets.UTF_8);
     }
 
     public OrieditaFoldFile toFoldSave(Save save, LineSegmentSet lineSegmentSet) throws InterruptedException {

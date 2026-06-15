@@ -78,5 +78,18 @@
             <artifactId>opencsv</artifactId>
             <version>4.1</version>
         </dependency>
+        <!-- Embedded Chromium (Java CEF) for the 3D folded preview panel.
+             jcefmaven downloads the native Chromium bundle on first run.
+             jcef-api carries the org.cef.* API classes used directly here. -->
+        <dependency>
+            <groupId>me.friwi</groupId>
+            <artifactId>jcefmaven</artifactId>
+            <version>143.0.14</version>
+        </dependency>
+        <dependency>
+            <groupId>me.friwi</groupId>
+            <artifactId>jcef-api</artifactId>
+            <version>jcef-cffac27+cef-143.0.14+gdd46a37+chromium-143.0.7499.193</version>
+        </dependency>
     </dependencies>
 </project>
